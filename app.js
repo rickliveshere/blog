@@ -25,12 +25,15 @@ app.use(express.session());
 app.use(app.router);
 app.use(express.static(path.join(__dirname, 'assets')));
 
-// development only
+// configure
 app.configure('development', function() {
 	app.use(express.errorHandler());
 })
 
 app.get('/', controllers.index);
+app.get('/blog', controllers.blog);
+app.get('/about', controllers.about);
+app.get('/contact', controllers.contact);
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));
