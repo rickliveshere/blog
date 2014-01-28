@@ -29,7 +29,7 @@ module.exports = function(db) {
         	});
         },
         update: function(article, next) {
-            this.articles().update(article, {safe:true}, function (err, updatedArticle) {
+            this.articles().update({_id: article._id}, article, function (err, updatedArticle) {
                 if (err)
                     next(err);
 

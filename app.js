@@ -45,10 +45,27 @@ MongoClient.connect('mongodb://127.0.0.1:27017/rickliveshere', function(err, db)
             next();
         };
 
+        var assignArticleId = function(req, res, next, articleId) {
+            if (!articleId)
+                next(new Error('No articleId specified!'));
+
+            if (articleId.length !== 24)
+                next(new Error('Article id not in correct format - ' + articleId));
+
+            try
+            {
+                req.articleId = BSON.ObjectID.createFromHexString(articleId);
+                next();
+            }
+            catch(err)
+            {
+                next(new Error('Problem translating articleId to hex string - ' + articleId));
+            }
+        };
+
         // params
         app.param('articleId', function(req, res, next, articleId) {
-            req.articleId = BSON.ObjectID.createFromHexString(articleId);
-            next();
+            assignArticleId(req, res, next, articleId);
         });
 
         // routes
@@ -56,10 +73,19 @@ MongoClient.connect('mongodb://127.0.0.1:27017/rickliveshere', function(err, db)
 		app.post('/admin/add', attachArticleProvider, admin.addArticle);
 
 		app.get('/admin/update/:articleId', attachArticleProvider, admin.getArticle);
-        app.post('/admin/update', attachArticleProvider, admin.updateArticle);
+        app.post('/admin/update', attachArticleProvider,
+            function (req, res, next) {
+                assignArticleId(req, res, next, req.body.articleId);
+            },
+            admin.updateArticle);
 		//app.get('/blog', controllers.blog);
 		//app.get('/about', controllers.about);
 		//app.get('/contact', controllers.contact);
+
+        app.use(function(err, req, res, next) {
+            //do logging and user-friendly error message display
+            res.send(500);
+        });
         
 		http.createServer(app).listen(app.get('port'), function(){
   			console.log('Express server listening on port ' + app.get('port'));
