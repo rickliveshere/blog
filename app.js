@@ -4,8 +4,9 @@
  */
 
 var express = require('express');
-var controllers = require('./controllers');
-var user = require('./controllers/user');
+var MongoClient = require('mongodb').MongoClient;
+var BSON = require('mongodb').BSONPure;
+var admin = require('./controllers/admin');
 var http = require('http');
 var path = require('path');
 
@@ -28,13 +29,40 @@ app.use(express.static(path.join(__dirname, 'assets')));
 // configure
 app.configure('development', function() {
 	app.use(express.errorHandler());
-})
+});
 
-app.get('/', controllers.index);
-app.get('/blog', controllers.blog);
-app.get('/about', controllers.about);
-app.get('/contact', controllers.contact);
+MongoClient.connect('mongodb://127.0.0.1:27017/rickliveshere', function(err, db) {
+    if(err) {
+        console.log('Sorry, there is no mongo db server running.');
+    } else {
 
-http.createServer(app).listen(app.get('port'), function(){
-  console.log('Express server listening on port ' + app.get('port'));
+        var articles = require('./model/article')(db);
+
+
+    	// middleware
+        var attachArticleProvider = function(req, res, next) {
+            req.articles = articles;
+            next();
+        };
+
+        // params
+        app.param('articleId', function(req, res, next, articleId) {
+            req.articleId = BSON.ObjectID.createFromHexString(articleId);
+            next();
+        });
+
+        // routes
+        app.get('/admin/add', admin.newArticle);
+		app.post('/admin/add', attachArticleProvider, admin.addArticle);
+
+		app.get('/admin/update/:articleId', attachArticleProvider, admin.getArticle);
+        app.post('/admin/update', attachArticleProvider, admin.updateArticle);
+		//app.get('/blog', controllers.blog);
+		//app.get('/about', controllers.about);
+		//app.get('/contact', controllers.contact);
+        
+		http.createServer(app).listen(app.get('port'), function(){
+  			console.log('Express server listening on port ' + app.get('port'));
+		});
+    }
 });

@@ -1,0 +1,7 @@
+extends ../layout
+
+block content
+  h1 Update '#{title}'
+  form(method='post' action='/admin/update')
+    include ../partials/_articleForm
+    input(type='submit' value='Submit')

@@ -1,0 +1,7 @@
+extends ../layout
+
+block content
+  h1 Create article
+  form(method='post' action='/admin/add')
+    include ../partials/_articleForm
+    input(type='submit' value='Submit')
