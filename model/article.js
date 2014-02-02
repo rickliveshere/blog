@@ -5,15 +5,15 @@ module.exports = function(db) {
 
     return model.extend({
         find: function(query, next) {
-        	this.articles().find(query, {}, function (err, docs) {
-        		if (err)
-        			next(err);
+        	this.articles().find( { $query: query, $orderby: { updated: 1, created: 1 } }, {}).toArray(function (err, articles) {
+                if (err)
+                    next(err);
 
-        		next(null, docs);
-        	});
+                next(null, articles);
+            });
         },
         get: function(id, next) {
-            this.articles().findOne({ _id: id }, {}, function (err, doc) {
+            this.articles().findOne({ _id: id }, { }, function (err, doc) {
         		if (err)
         			next(err);
 
@@ -28,8 +28,8 @@ module.exports = function(db) {
         		next();
         	});
         },
-        update: function(article, next) {
-            this.articles().update({_id: article._id}, article, function (err, updatedArticle) {
+        update: function(id, article, next) {
+            this.articles().update({_id: id}, { $set: article }, function (err, updatedArticle) {
                 if (err)
                     next(err);
 

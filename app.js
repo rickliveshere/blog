@@ -69,6 +69,8 @@ MongoClient.connect('mongodb://127.0.0.1:27017/rickliveshere', function(err, db)
         });
 
         // routes
+        app.get('/admin', attachArticleProvider, admin.listArticles);
+
         app.get('/admin/add', admin.newArticle);
 		app.post('/admin/add', attachArticleProvider, admin.addArticle);
 

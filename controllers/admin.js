@@ -1,6 +1,6 @@
 
 exports.newArticle = function(req, res){
-  res.render('admin/add-article');
+  	res.render('admin/add-article');
 };
 
 exports.addArticle = function(req, res){
@@ -34,17 +34,26 @@ exports.getArticle = function(req, res){
 exports.updateArticle = function(req, res){
 
 	var article = {
-		_id: req.articleId,
 		title: req.body.title,
 		content: req.body.content,
 		updated: new Date()
 	};
 
-	req.articles.update(article, function(err) {
+	req.articles.update(req.articleId, article, function(err) {
 		if (err)
 			next(err);
 
 		res.locals = { title: article.title };
   		res.render('admin/article-updated');
+	});
+};
+
+exports.listArticles = function(req, res){
+  	req.articles.find({}, function(err, collection) {
+		if (err)
+			next(err);
+
+		res.locals = { articles: collection };
+  		res.render('admin/index');
 	});
 };
